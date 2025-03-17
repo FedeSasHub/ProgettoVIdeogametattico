@@ -1,0 +1,20 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AUnit.h"
+#include "ABrawler.generated.h"
+
+UCLASS()
+class TATTICO2_API ABrawler : public AUnit
+{
+    GENERATED_BODY()
+
+public:
+    ABrawler();
+
+protected:
+    virtual void BeginPlay() override;
+
+public:
+    virtual void Tick(float DeltaTime) override;
+};
