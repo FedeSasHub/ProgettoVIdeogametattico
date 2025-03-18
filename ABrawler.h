@@ -17,4 +17,7 @@ protected:
 
 public:
     virtual void Tick(float DeltaTime) override;
+
+    // Override del calcolo del danno
+    virtual int32 CalculateDamage() const override;
 };

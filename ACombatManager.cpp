@@ -1,11 +1,16 @@
 #include "ACombatManager.h"
+#include "Engine.h"
 #include "AUnit.h"
+#include "GameFramework/DamageType.h"
+#include "Engine/DamageEvents.h"
+#include "GameFramework/Controller.h"
+
 
 ACombatManager::ACombatManager()
 {
     PrimaryActorTick.bCanEverTick = false;
-    CounterDamageMin = 1; // Danno minimo da contrattacco
-    CounterDamageMax = 3; // Danno massimo da contrattacco
+    CounterDamageMin = 1;
+    CounterDamageMax = 3;
 }
 
 void ACombatManager::BeginPlay()
@@ -24,7 +29,12 @@ void ACombatManager::HandleAttack(AUnit* Attacker, AUnit* Defender)
     {
         // Calcola il danno
         int32 Damage = Attacker->CalculateDamage();
-        Defender->TakeDamage(Damage);
+
+        // Crea un FDamageEvent
+        FDamageEvent DamageEvent;
+
+        // Applica il danno al difensore
+        Defender->TakeDamage(Damage, DamageEvent, Cast<AActor>(Attacker)->GetInstigatorController(), Attacker);
 
         // Log dell'attacco
         UE_LOG(LogTemp, Warning, TEXT("%s attacca %s per %d danni!"), *Attacker->GetName(), *Defender->GetName(), Damage);
@@ -33,7 +43,9 @@ void ACombatManager::HandleAttack(AUnit* Attacker, AUnit* Defender)
         if (Defender->CanCounterAttack(Attacker))
         {
             int32 CounterDamage = CalculateCounterDamage();
-            Attacker->TakeDamage(CounterDamage);
+
+            // Applica il danno da contrattacco all'attaccante
+            Attacker->TakeDamage(CounterDamage, DamageEvent, Cast<AActor>(Defender)->GetInstigatorController(), Defender);
 
             // Log del contrattacco
             UE_LOG(LogTemp, Warning, TEXT("%s contrattacca %s per %d danni!"), *Defender->GetName(), *Attacker->GetName(), CounterDamage);

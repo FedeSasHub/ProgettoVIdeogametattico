@@ -1,4 +1,4 @@
-#include "AUnitManager.h"
+#include "AUnitManager.h" // Deve essere la prima inclusione
 #include "AUnit.h"
 
 AUnitManager::AUnitManager()
@@ -34,7 +34,7 @@ void AUnitManager::RemoveUnit(AUnit* Unit)
     }
 }
 
-AUnit* AUnitManager::GetUnitAtPosition(int32 X, int32 Y)
+AUnit* AUnitManager::GetUnitAtPosition(int32 X, int32 Y) const
 {
     for (AUnit* Unit : Units)
     {
@@ -46,7 +46,7 @@ AUnit* AUnitManager::GetUnitAtPosition(int32 X, int32 Y)
     return nullptr;
 }
 
-bool AUnitManager::IsCellOccupied(int32 X, int32 Y)
+bool AUnitManager::IsCellOccupied(int32 X, int32 Y) const
 {
     return GetUnitAtPosition(X, Y) != nullptr;
 }

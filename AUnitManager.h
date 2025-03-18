@@ -26,10 +26,10 @@ public:
     void RemoveUnit(AUnit* Unit);
 
     // Trova un'unità in una specifica cella
-    AUnit* GetUnitAtPosition(int32 X, int32 Y);
+    AUnit* GetUnitAtPosition(int32 X, int32 Y) const;
 
     // Verifica se una cella è occupata
-    bool IsCellOccupied(int32 X, int32 Y);
+    bool IsCellOccupied(int32 X, int32 Y) const;
 
 private:
     // Array per memorizzare tutte le unità

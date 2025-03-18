@@ -8,6 +8,7 @@ AGrid::AGrid()
     PrimaryActorTick.bCanEverTick = false;
     GridSize = 25; // Griglia 25x25
     CellSize = 200.f; // Dimensione di ogni cella
+    ObstacleCount = 0;
 }
 
 void AGrid::BeginPlay()
@@ -56,24 +57,99 @@ void AGrid::GenerateGrid()
 void AGrid::GenerateObstacles(float ObstaclePercentage)
 {
     int32 TotalCells = GridSize * GridSize;
-    int32 ObstacleCount = FMath::RoundToInt(TotalCells * ObstaclePercentage / 100.0f);
+    ObstacleCount = FMath::RoundToInt(TotalCells * ObstaclePercentage / 100.0f);
 
-    for (int32 i = 0; i < ObstacleCount; i++)
+    int32 Attempts = 0;
+    while (Attempts < 100) // Limite di tentativi per evitare loop infiniti
     {
-        int32 x = FMath::RandRange(0, GridSize - 1);
-        int32 y = FMath::RandRange(0, GridSize - 1);
-
-        // Verifica che la cella non sia già un ostacolo
-        if (!ObstacleGrid[x][y])
+        // Resetta la griglia degli ostacoli
+        for (int32 x = 0; x < GridSize; x++)
         {
-            ObstacleGrid[x][y] = true; // Segna la cella come ostacolo
-            FVector ObstaclePosition = GetCellPosition(x, y);
-            if (ObstacleClass)
+            for (int32 y = 0; y < GridSize; y++)
             {
-                GetWorld()->SpawnActor<AObstacle>(ObstacleClass, ObstaclePosition, FRotator::ZeroRotator);
+                ObstacleGrid[x][y] = false;
+            }
+        }
+
+        // Genera ostacoli
+        for (int32 i = 0; i < ObstacleCount; i++)
+        {
+            int32 x = FMath::RandRange(0, GridSize - 1);
+            int32 y = FMath::RandRange(0, GridSize - 1);
+
+            if (!ObstacleGrid[x][y])
+            {
+                ObstacleGrid[x][y] = true; // Segna la cella come ostacolo
+                FVector ObstaclePosition = GetCellPosition(x, y);
+                if (ObstacleClass)
+                {
+                    GetWorld()->SpawnActor<AObstacle>(ObstacleClass, ObstaclePosition, FRotator::ZeroRotator);
+                }
+            }
+        }
+
+        // Verifica la raggiungibilità
+        if (IsGridFullyReachable())
+        {
+            break;
+        }
+
+        Attempts++;
+    }
+
+    if (Attempts >= 100)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Impossibile generare una griglia raggiungibile!"));
+    }
+}
+
+bool AGrid::IsGridFullyReachable() const
+{
+    // Crea una copia della griglia per marcare le celle visitate
+    TArray<TArray<bool>> Visited;
+    Visited.Init(TArray<bool>(), GridSize);
+    for (int32 x = 0; x < GridSize; x++)
+    {
+        Visited[x].Init(false, GridSize);
+    }
+
+    // Usa una coda per il Flood Fill
+    TQueue<TPair<int32, int32>> Queue;
+    Queue.Enqueue(TPair<int32, int32>(0, 0)); // Parti dalla cella (0, 0)
+    Visited[0][0] = true;
+
+    int32 ReachableCells = 1;
+
+    // Esegui il Flood Fill
+    while (!Queue.IsEmpty())
+    {
+        TPair<int32, int32> CurrentCell;
+        Queue.Dequeue(CurrentCell);
+
+        // Controlla le celle adiacenti
+        TArray<TPair<int32, int32>> Neighbors = {
+            {CurrentCell.Key - 1, CurrentCell.Value}, // Sinistra
+            {CurrentCell.Key + 1, CurrentCell.Value}, // Destra
+            {CurrentCell.Key, CurrentCell.Value - 1}, // Sopra
+            {CurrentCell.Key, CurrentCell.Value + 1}  // Sotto
+        };
+
+        for (const auto& Neighbor : Neighbors)
+        {
+            int32 X = Neighbor.Key;
+            int32 Y = Neighbor.Value;
+
+            if (IsCellValid(X, Y) && !Visited[X][Y] && !IsCellObstacle(X, Y))
+            {
+                Visited[X][Y] = true;
+                Queue.Enqueue(TPair<int32, int32>(X, Y));
+                ReachableCells++;
             }
         }
     }
+
+    // Verifica se tutte le celle sono raggiungibili
+    return ReachableCells == (GridSize * GridSize - ObstacleCount);
 }
 
 void AGrid::DrawGrid()
@@ -114,4 +190,16 @@ bool AGrid::IsCellObstacle(int32 X, int32 Y) const
         return ObstacleGrid[X][Y];
     }
     return false;
+}
+
+bool AGrid::IsCellOccupied(int32 X, int32 Y) const
+{
+    if (!UnitManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("UnitManager non inizializzato!"));
+        return false;
+    }
+
+    // Verifica se c'è un'unità nella cella (X, Y)
+    return UnitManager->GetUnitAtPosition(X, Y) != nullptr; // Usa GetUnitAtPosition
 }

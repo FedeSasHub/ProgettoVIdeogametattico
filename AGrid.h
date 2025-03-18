@@ -36,6 +36,12 @@ public:
     // Verifica se una cella è occupata da un ostacolo
     bool IsCellObstacle(int32 X, int32 Y) const;
 
+    // Verifica se una cella è occupata da un'unità
+    bool IsCellOccupied(int32 X, int32 Y) const;
+
+    // Verifica se la griglia è completamente raggiungibile
+    bool IsGridFullyReachable() const;
+
     // Riferimento al UnitManager
     UPROPERTY()
     class AUnitManager* UnitManager;
@@ -58,4 +64,7 @@ private:
     // Classe per gli ostacoli
     UPROPERTY(EditAnywhere, Category = "Grid")
     TSubclassOf<class AObstacle> ObstacleClass;
+
+    // Contatore degli ostacoli
+    int32 ObstacleCount;
 };
