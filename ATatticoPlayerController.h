@@ -2,10 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "AGrid.h" // Includi il file di intestazione di AGrid
+#include "AGrid.h"
 #include "AUnit.h"
 #include "ATatticoPlayerController.generated.h"
-
 
 UCLASS()
 class TATTICO2_API ATatticoPlayerController : public APlayerController {

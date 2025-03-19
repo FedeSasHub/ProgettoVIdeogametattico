@@ -59,6 +59,9 @@ public:
     // Verifica se una cella è bloccata
     bool IsBlocked(FCell Cell);
 
+    // Ottiene le celle raggiungibili
+    TArray<FCell> GetReachableCells(FCell StartCell, int32 Range);
+
 private:
     UPROPERTY(EditAnywhere, Category = "Grid")
     int32 GridSizeX;

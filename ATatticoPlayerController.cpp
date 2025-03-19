@@ -15,7 +15,7 @@ void ATatticoPlayerController::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-void ATatticoPlayerController::HighlightMovementRange(AAUnit* SelectedUnit) {
+void ATatticoPlayerController::HighlightMovementRange(AUnit* SelectedUnit) {
     if (!SelectedUnit || !Grid) return;
 
     TArray<FCell> ReachableCells = Grid->GetReachableCells(SelectedUnit->GetCurrentCell(), SelectedUnit->GetMovementRange());

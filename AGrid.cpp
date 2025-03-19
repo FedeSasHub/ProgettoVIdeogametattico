@@ -40,7 +40,7 @@ TArray<FCell> AGrid::FindPath(FCell Start, FCell Goal) {
             }
         }
 
-        if (Current.X == Goal.X && Current.Y == Goal.Y) {
+        if (Current == Goal) {
             TArray<FCell> Path;
             while (Current.Parent != nullptr) {
                 Path.Add(Current);
@@ -119,4 +119,30 @@ FVector AGrid::GetCellWorldPosition(FCell Cell) {
 bool AGrid::IsBlocked(FCell Cell) {
     // Implementa la logica per verificare se una cella è bloccata
     return false;
+}
+
+TArray<FCell> AGrid::GetReachableCells(FCell StartCell, int32 Range) {
+    TArray<FCell> ReachableCells;
+    TArray<FCell> OpenSet;
+    TArray<FCell> ClosedSet;
+
+    OpenSet.Add(StartCell);
+
+    while (OpenSet.Num() > 0) {
+        FCell Current = OpenSet[0];
+        OpenSet.Remove(Current);
+        ClosedSet.Add(Current);
+
+        for (FCell Neighbor : GetNeighbors(Current)) {
+            if (ClosedSet.Contains(Neighbor) || IsBlocked(Neighbor)) continue;
+
+            int32 Distance = GetDistance(StartCell, Neighbor);
+            if (Distance <= Range) {
+                ReachableCells.Add(Neighbor);
+                OpenSet.Add(Neighbor);
+            }
+        }
+    }
+
+    return ReachableCells;
 }

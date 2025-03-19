@@ -12,20 +12,13 @@ class TATTICO2_API ACombatManager : public AActor
 
 public:
     ACombatManager();
+    void HandleAttack(AUnit* Attacker, AUnit* Defender);
+    int32 CalculateCounterDamage(AUnit* Defender) const;
 
 protected:
     virtual void BeginPlay() override;
 
-public:
-    virtual void Tick(float DeltaTime) override;
-
-    void HandleAttack(AUnit* Attacker, AUnit* Defender);
-    int32 CalculateCounterDamage() const;
-
 private:
-    UPROPERTY(EditAnywhere, Category = "Combat")
     int32 CounterDamageMin;
-
-    UPROPERTY(EditAnywhere, Category = "Combat")
     int32 CounterDamageMax;
 };
