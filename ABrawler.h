@@ -1,12 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AUnit.h"
+#include "AUnit.h" // Includi il file della classe genitore
 #include "ABrawler.generated.h"
 
 UCLASS()
-class TATTICO2_API ABrawler : public AUnit
-{
+class TATTICO2_API ABrawler : public AUnit {
     GENERATED_BODY()
 
 public:

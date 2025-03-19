@@ -1,27 +1,18 @@
 #include "AUnit.h"
-#include "AGrid.h"
 
-AAUnit::AAUnit() {
+AUnit::AUnit() {
     PrimaryActorTick.bCanEverTick = true;
-    MovementRange = 3; // Esempio per Sniper
 }
 
-void AAUnit::BeginPlay() {
+void AUnit::BeginPlay() {
     Super::BeginPlay();
 }
 
-void AAUnit::Tick(float DeltaTime) {
+void AUnit::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-void AAUnit::MoveToCell(FCell Destination) {
-    if (!Grid) return;
-
-    TArray<FCell> Path = Grid->FindPath(CurrentCell, Destination);
-    if (Path.Num() > 0) {
-        for (FCell Cell : Path) {
-            SetActorLocation(Grid->GetCellWorldPosition(Cell));
-            CurrentCell = Cell;
-        }
-    }
+int32 AUnit::CalculateDamage() const {
+    // Implementazione di base per il calcolo del danno
+    return 0;
 }

@@ -1,52 +1,41 @@
-#include "AUnitManager.h" // Deve essere la prima inclusione
+#include "AUnitManager.h"
 #include "AUnit.h"
 
-AUnitManager::AUnitManager()
-{
-    PrimaryActorTick.bCanEverTick = false;
+AUnitManager::AUnitManager() {
+    PrimaryActorTick.bCanEverTick = true;
 }
 
-void AUnitManager::BeginPlay()
-{
+void AUnitManager::BeginPlay() {
     Super::BeginPlay();
 }
 
-void AUnitManager::Tick(float DeltaTime)
-{
+void AUnitManager::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-void AUnitManager::AddUnit(AUnit* Unit)
-{
-    if (Unit)
-    {
+void AUnitManager::AddUnit(AUnit* Unit) {
+    if (Unit) {
         Units.Add(Unit);
-        UE_LOG(LogTemp, Warning, TEXT("Unità aggiunta: %s"), *Unit->GetName());
     }
 }
 
-void AUnitManager::RemoveUnit(AUnit* Unit)
-{
-    if (Unit)
-    {
+void AUnitManager::RemoveUnit(AUnit* Unit) {
+    if (Unit) {
         Units.Remove(Unit);
-        UE_LOG(LogTemp, Warning, TEXT("Unità rimossa: %s"), *Unit->GetName());
     }
 }
 
-AUnit* AUnitManager::GetUnitAtPosition(int32 X, int32 Y) const
-{
-    for (AUnit* Unit : Units)
-    {
-        if (Unit->GetGridPositionX() == X && Unit->GetGridPositionY() == Y)
-        {
-            return Unit;
-        }
+AUnit* AUnitManager::GetUnitAtPosition(int32 X, int32 Y) const {
+    for (AUnit* Unit : Units) {
+        // Implementa la logica per verificare la posizione dell'unità
+        // (ad esempio, confronta con le coordinate della cella)
     }
     return nullptr;
 }
 
-bool AUnitManager::IsCellOccupied(int32 X, int32 Y) const
-{
-    return GetUnitAtPosition(X, Y) != nullptr;
+bool AUnitManager::IsCellOccupied(int32 X, int32 Y) const {
+    for (AUnit* Unit : Units) {
+        // Implementa la logica per verificare se la cella è occupata
+    }
+    return false;
 }

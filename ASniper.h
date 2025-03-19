@@ -1,12 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AUnit.h"
+#include "AUnit.h" // Includi il file della classe genitore
 #include "ASniper.generated.h"
 
 UCLASS()
-class TATTICO2_API ASniper : public AUnit
-{
+class TATTICO2_API ASniper : public AUnit {
     GENERATED_BODY()
 
 public:
@@ -20,7 +19,4 @@ public:
 
     // Override del calcolo del danno
     virtual int32 CalculateDamage() const override;
-
-    // Override del contrattacco
-    virtual bool CanCounterAttack(AUnit* Attacker) const override;
 };

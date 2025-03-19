@@ -1,23 +1,23 @@
 #include "AGrid.h"
 #include "Engine/World.h"
 
-AAGrid::AAGrid() {
+AGrid::AGrid() {
     PrimaryActorTick.bCanEverTick = true;
     GridSizeX = 25;
     GridSizeY = 25;
     CellSize = 100.f;
 }
 
-void AAGrid::BeginPlay() {
+void AGrid::BeginPlay() {
     Super::BeginPlay();
     GenerateGrid();
 }
 
-void AAGrid::Tick(float DeltaTime) {
+void AGrid::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-void AAGrid::GenerateGrid() {
+void AGrid::GenerateGrid() {
     GridCells.SetNum(GridSizeX);
     for (int32 X = 0; X < GridSizeX; X++) {
         GridCells[X].SetNum(GridSizeY);
@@ -27,7 +27,7 @@ void AAGrid::GenerateGrid() {
     }
 }
 
-TArray<FCell> AAGrid::FindPath(FCell Start, FCell Goal) {
+TArray<FCell> AGrid::FindPath(FCell Start, FCell Goal) {
     TArray<FCell> OpenSet;
     TArray<FCell> ClosedSet;
     OpenSet.Add(Start);
@@ -72,7 +72,7 @@ TArray<FCell> AAGrid::FindPath(FCell Start, FCell Goal) {
     return TArray<FCell>();
 }
 
-bool AAGrid::IsGridFullyReachable() {
+bool AGrid::IsGridFullyReachable() {
     TArray<FCell> VisitedCells;
     TArray<FCell> Queue;
     Queue.Add(GridCells[0][0]);
@@ -91,7 +91,7 @@ bool AAGrid::IsGridFullyReachable() {
     return VisitedCells.Num() == (GridSizeX * GridSizeY);
 }
 
-TArray<FCell> AAGrid::GetNeighbors(FCell Cell) {
+TArray<FCell> AGrid::GetNeighbors(FCell Cell) {
     TArray<FCell> Neighbors;
     int32 X = Cell.X;
     int32 Y = Cell.Y;
@@ -104,19 +104,19 @@ TArray<FCell> AAGrid::GetNeighbors(FCell Cell) {
     return Neighbors;
 }
 
-int32 AAGrid::GetDistance(FCell A, FCell B) {
+int32 AGrid::GetDistance(FCell A, FCell B) {
     return FMath::Abs(A.X - B.X) + FMath::Abs(A.Y - B.Y);
 }
 
-void AAGrid::HighlightCell(FCell Cell, FColor Color) {
+void AGrid::HighlightCell(FCell Cell, FColor Color) {
     // Implementa l'evidenziazione della cella (es. cambiare colore del materiale)
 }
 
-FVector AAGrid::GetCellWorldPosition(FCell Cell) {
+FVector AGrid::GetCellWorldPosition(FCell Cell) {
     return FVector(Cell.X * CellSize, Cell.Y * CellSize, 0);
 }
 
-bool AAGrid::IsBlocked(FCell Cell) {
+bool AGrid::IsBlocked(FCell Cell) {
     // Implementa la logica per verificare se una cella è bloccata
     return false;
 }

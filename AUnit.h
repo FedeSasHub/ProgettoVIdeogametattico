@@ -5,11 +5,11 @@
 #include "AUnit.generated.h"
 
 UCLASS()
-class YOURPROJECTNAME_API AAUnit : public AActor {
+class TATTICO2_API AUnit : public AActor {
     GENERATED_BODY()
 
 public:
-    AAUnit();
+    AUnit();
 
 protected:
     virtual void BeginPlay() override;
@@ -17,19 +17,6 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    // Muove l'unità a una cella specifica
-    void MoveToCell(FCell Destination);
-
-    // Ottiene la cella corrente
-    FCell GetCurrentCell() const { return CurrentCell; }
-
-    // Imposta la cella corrente
-    void SetCurrentCell(FCell Cell) { CurrentCell = Cell; }
-
-    // Ottiene il range di movimento
-    int32 GetMovementRange() const { return MovementRange; }
-
-private:
-    FCell CurrentCell;
-    int32 MovementRange;
+    // Funzione virtuale per il calcolo del danno
+    virtual int32 CalculateDamage() const;
 };

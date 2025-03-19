@@ -15,14 +15,19 @@ struct FCell {
     FCell* Parent;
 
     int32 GetFCost() const { return GCost + HCost; }
+
+    // Definisci l'operatore di confronto
+    bool operator==(const FCell& Other) const {
+        return X == Other.X && Y == Other.Y;
+    }
 };
 
 UCLASS()
-class YOURPROJECTNAME_API AAGrid : public AActor {
+class TATTICO2_API AGrid : public AActor {
     GENERATED_BODY()
 
 public:
-    AAGrid();
+    AGrid();
 
 protected:
     virtual void BeginPlay() override;

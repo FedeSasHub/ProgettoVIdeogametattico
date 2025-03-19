@@ -1,27 +1,18 @@
 #include "ABrawler.h"
 
-ABrawler::ABrawler()
-{
-    // Imposta le proprietà specifiche del Brawler
-    MovementRange = 6; // Max 6 celle
-    AttackType = 0; // Attacco a corto raggio
-    AttackRange = 1; // Max 1 cella
-    DamageMin = 1; // Danno minimo
-    DamageMax = 6; // Danno massimo
-    Health = 40; // Punti vita
+ABrawler::ABrawler() {
+    PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABrawler::BeginPlay()
-{
+void ABrawler::BeginPlay() {
     Super::BeginPlay();
 }
 
-void ABrawler::Tick(float DeltaTime)
-{
+void ABrawler::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-int32 ABrawler::CalculateDamage() const
-{
-    return FMath::RandRange(DamageMin, DamageMax);
+int32 ABrawler::CalculateDamage() const {
+    // Implementazione specifica per Brawler
+    return FMath::RandRange(1, 6); // Danno casuale tra 1 e 6
 }
