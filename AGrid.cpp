@@ -19,14 +19,23 @@ void AGrid::Tick(float DeltaTime) {
 
 void AGrid::GenerateGrid() {
     GridCells.SetNum(GridSizeX);
+    GridActors.SetNum(GridSizeX);
     for (int32 X = 0; X < GridSizeX; X++) {
         GridCells[X].SetNum(GridSizeY);
+        GridActors[X].SetNum(GridSizeY);
         for (int32 Y = 0; Y < GridSizeY; Y++) {
             GridCells[X][Y] = FCell{ X, Y };
+            // Crea o trova l'oggetto della cella e memorizzalo in GridActors[X][Y]
         }
     }
 }
-
+AActor* AGrid::GetCellActor(FCell Cell) {
+    if (Cell.X < 0 || Cell.X >= GridSizeX || Cell.Y < 0 || Cell.Y >= GridSizeY) return nullptr;
+    if (GridActors.IsValidIndex(Cell.X) && GridActors[Cell.X].IsValidIndex(Cell.Y)) {
+        return GridActors[Cell.X][Cell.Y];
+    }
+    return nullptr;
+}
 TArray<FCell> AGrid::FindPath(FCell Start, FCell Goal) {
     TArray<FCell> OpenSet;
     TArray<FCell> ClosedSet;
@@ -109,7 +118,23 @@ int32 AGrid::GetDistance(FCell A, FCell B) {
 }
 
 void AGrid::HighlightCell(FCell Cell, FColor Color) {
-    // Implementa l'evidenziazione della cella (es. cambiare colore del materiale)
+    // Verifica che la cella sia valida
+    if (Cell.X < 0 || Cell.X >= GridSizeX || Cell.Y < 0 || Cell.Y >= GridSizeY) return;
+
+    // Ottieni l'oggetto della cella (es. un StaticMeshActor)
+    AActor* CellActor = GetCellActor(Cell);
+    if (!CellActor) return;
+
+    // Ottieni il componente di mesh della cella
+    UStaticMeshComponent* MeshComponent = CellActor->FindComponentByClass<UStaticMeshComponent>();
+    if (!MeshComponent) return;
+
+    // Crea un materiale dinamico
+    UMaterialInstanceDynamic* DynamicMaterial = MeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+    if (DynamicMaterial) {
+        // Imposta il colore del materiale
+        DynamicMaterial->SetVectorParameterValue("BaseColor", FLinearColor(Color));
+    }
 }
 
 FVector AGrid::GetCellWorldPosition(FCell Cell) {
@@ -117,7 +142,25 @@ FVector AGrid::GetCellWorldPosition(FCell Cell) {
 }
 
 bool AGrid::IsBlocked(FCell Cell) {
-    // Implementa la logica per verificare se una cella è bloccata
+    // Verifica che la cella sia valida
+    if (Cell.X < 0 || Cell.X >= GridSizeX || Cell.Y < 0 || Cell.Y >= GridSizeY) return true;
+
+    // Ottieni l'oggetto della cella (es. un StaticMeshActor)
+    AActor* CellActor = GetCellActor(Cell);
+    if (!CellActor) return false;
+
+    // Verifica se la cella contiene un ostacolo
+    // (es. controlla se l'oggetto ha un tag "Obstacle")
+    if (CellActor->ActorHasTag("Obstacle")) {
+        return true;
+    }
+
+    // Verifica se la cella contiene un'unità
+    // (es. controlla se l'oggetto ha un tag "Unit")
+    if (CellActor->ActorHasTag("Unit")) {
+        return true;
+    }
+
     return false;
 }
 

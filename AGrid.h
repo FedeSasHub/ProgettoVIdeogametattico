@@ -62,6 +62,9 @@ public:
     // Ottiene le celle raggiungibili
     TArray<FCell> GetReachableCells(FCell StartCell, int32 Range);
 
+    // Ottiene l'oggetto della cella
+    AActor* GetCellActor(FCell Cell);
+
 private:
     UPROPERTY(EditAnywhere, Category = "Grid")
     int32 GridSizeX;
@@ -73,4 +76,7 @@ private:
     float CellSize;
 
     TArray<TArray<FCell>> GridCells;
+
+    // Array per memorizzare gli oggetti delle celle
+    TArray<TArray<AActor*>> GridActors;
 };
