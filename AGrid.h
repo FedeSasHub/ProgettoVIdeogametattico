@@ -4,13 +4,25 @@
 #include "GameFramework/Actor.h"
 #include "AGrid.generated.h"
 
+USTRUCT()
+struct FCell {
+    GENERATED_BODY()
+
+    int32 X;
+    int32 Y;
+    int32 GCost;
+    int32 HCost;
+    FCell* Parent;
+
+    int32 GetFCost() const { return GCost + HCost; }
+};
+
 UCLASS()
-class TATTICO2_API AGrid : public AActor
-{
+class YOURPROJECTNAME_API AAGrid : public AActor {
     GENERATED_BODY()
 
 public:
-    AGrid();
+    AAGrid();
 
 protected:
     virtual void BeginPlay() override;
@@ -21,50 +33,36 @@ public:
     // Genera la griglia
     void GenerateGrid();
 
-    // Genera gli ostacoli
-    void GenerateObstacles(float ObstaclePercentage);
+    // Trova il percorso minimo tra due celle
+    TArray<FCell> FindPath(FCell Start, FCell Goal);
 
-    // Disegna la griglia (debug)
-    void DrawGrid();
+    // Verifica se tutte le celle sono raggiungibili
+    bool IsGridFullyReachable();
 
-    // Ottieni la posizione di una cella
-    FVector GetCellPosition(int32 X, int32 Y) const;
+    // Ottiene le celle vicine
+    TArray<FCell> GetNeighbors(FCell Cell);
 
-    // Verifica se una cella è valida
-    bool IsCellValid(int32 X, int32 Y) const;
+    // Ottiene la distanza tra due celle
+    int32 GetDistance(FCell A, FCell B);
 
-    // Verifica se una cella è occupata da un ostacolo
-    bool IsCellObstacle(int32 X, int32 Y) const;
+    // Evidenzia una cella
+    void HighlightCell(FCell Cell, FColor Color);
 
-    // Verifica se una cella è occupata da un'unità
-    bool IsCellOccupied(int32 X, int32 Y) const;
+    // Ottiene la posizione mondiale di una cella
+    FVector GetCellWorldPosition(FCell Cell);
 
-    // Verifica se la griglia è completamente raggiungibile
-    bool IsGridFullyReachable() const;
-
-    // Riferimento al UnitManager
-    UPROPERTY()
-    class AUnitManager* UnitManager;
+    // Verifica se una cella è bloccata
+    bool IsBlocked(FCell Cell);
 
 private:
-    // Dimensioni della griglia
     UPROPERTY(EditAnywhere, Category = "Grid")
-    int32 GridSize;
+    int32 GridSizeX;
 
-    // Dimensioni di ogni cella
+    UPROPERTY(EditAnywhere, Category = "Grid")
+    int32 GridSizeY;
+
     UPROPERTY(EditAnywhere, Category = "Grid")
     float CellSize;
 
-    // Array per memorizzare le celle
-    TArray<TArray<FVector>> GridArray;
-
-    // Array per memorizzare gli ostacoli
-    TArray<TArray<bool>> ObstacleGrid;
-
-    // Classe per gli ostacoli
-    UPROPERTY(EditAnywhere, Category = "Grid")
-    TSubclassOf<class AObstacle> ObstacleClass;
-
-    // Contatore degli ostacoli
-    int32 ObstacleCount;
+    TArray<TArray<FCell>> GridCells;
 };

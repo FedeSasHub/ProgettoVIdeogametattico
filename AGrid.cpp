@@ -1,205 +1,122 @@
 #include "AGrid.h"
-#include "AObstacle.h"
-#include "AUnitManager.h"
-#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
 
-AGrid::AGrid()
-{
-    PrimaryActorTick.bCanEverTick = false;
-    GridSize = 25; // Griglia 25x25
-    CellSize = 200.f; // Dimensione di ogni cella
-    ObstacleCount = 0;
+AAGrid::AAGrid() {
+    PrimaryActorTick.bCanEverTick = true;
+    GridSizeX = 25;
+    GridSizeY = 25;
+    CellSize = 100.f;
 }
 
-void AGrid::BeginPlay()
-{
+void AAGrid::BeginPlay() {
     Super::BeginPlay();
-
-    // Inizializza la griglia e gli ostacoli
     GenerateGrid();
-    GenerateObstacles(10.f); // 10% di ostacoli
-    DrawGrid();
-
-    // Crea il UnitManager
-    UnitManager = GetWorld()->SpawnActor<AUnitManager>();
-    if (!UnitManager)
-    {
-        UE_LOG(LogTemp, Error, TEXT("UnitManager non creato!"));
-    }
 }
 
-void AGrid::Tick(float DeltaTime)
-{
+void AAGrid::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 }
 
-void AGrid::GenerateGrid()
-{
-    // Inizializza la griglia e la matrice degli ostacoli
-    GridArray.Empty();
-    ObstacleGrid.Empty();
-
-    for (int32 x = 0; x < GridSize; x++)
-    {
-        TArray<FVector> Column;
-        TArray<bool> ObstacleColumn;
-        for (int32 y = 0; y < GridSize; y++)
-        {
-            FVector CellPosition = FVector(x * CellSize, y * CellSize, 0);
-            Column.Add(CellPosition);
-            ObstacleColumn.Add(false); // Inizialmente nessun ostacolo
+void AAGrid::GenerateGrid() {
+    GridCells.SetNum(GridSizeX);
+    for (int32 X = 0; X < GridSizeX; X++) {
+        GridCells[X].SetNum(GridSizeY);
+        for (int32 Y = 0; Y < GridSizeY; Y++) {
+            GridCells[X][Y] = FCell{ X, Y };
         }
-        GridArray.Add(Column);
-        ObstacleGrid.Add(ObstacleColumn);
     }
 }
 
-void AGrid::GenerateObstacles(float ObstaclePercentage)
-{
-    int32 TotalCells = GridSize * GridSize;
-    ObstacleCount = FMath::RoundToInt(TotalCells * ObstaclePercentage / 100.0f);
+TArray<FCell> AAGrid::FindPath(FCell Start, FCell Goal) {
+    TArray<FCell> OpenSet;
+    TArray<FCell> ClosedSet;
+    OpenSet.Add(Start);
 
-    int32 Attempts = 0;
-    while (Attempts < 100) // Limite di tentativi per evitare loop infiniti
-    {
-        // Resetta la griglia degli ostacoli
-        for (int32 x = 0; x < GridSize; x++)
-        {
-            for (int32 y = 0; y < GridSize; y++)
-            {
-                ObstacleGrid[x][y] = false;
+    while (OpenSet.Num() > 0) {
+        FCell Current = OpenSet[0];
+        for (FCell Cell : OpenSet) {
+            if (Cell.GetFCost() < Current.GetFCost() || (Cell.GetFCost() == Current.GetFCost() && Cell.HCost < Current.HCost)) {
+                Current = Cell;
             }
         }
 
-        // Genera ostacoli
-        for (int32 i = 0; i < ObstacleCount; i++)
-        {
-            int32 x = FMath::RandRange(0, GridSize - 1);
-            int32 y = FMath::RandRange(0, GridSize - 1);
+        if (Current.X == Goal.X && Current.Y == Goal.Y) {
+            TArray<FCell> Path;
+            while (Current.Parent != nullptr) {
+                Path.Add(Current);
+                Current = *Current.Parent;
+            }
+            Algo::Reverse(Path);
+            return Path;
+        }
 
-            if (!ObstacleGrid[x][y])
-            {
-                ObstacleGrid[x][y] = true; // Segna la cella come ostacolo
-                FVector ObstaclePosition = GetCellPosition(x, y);
-                if (ObstacleClass)
-                {
-                    GetWorld()->SpawnActor<AObstacle>(ObstacleClass, ObstaclePosition, FRotator::ZeroRotator);
+        OpenSet.Remove(Current);
+        ClosedSet.Add(Current);
+
+        for (FCell Neighbor : GetNeighbors(Current)) {
+            if (ClosedSet.Contains(Neighbor)) continue;
+
+            int32 TentativeGCost = Current.GCost + GetDistance(Current, Neighbor);
+            if (!OpenSet.Contains(Neighbor) || TentativeGCost < Neighbor.GCost) {
+                Neighbor.Parent = new FCell(Current);
+                Neighbor.GCost = TentativeGCost;
+                Neighbor.HCost = GetDistance(Neighbor, Goal);
+
+                if (!OpenSet.Contains(Neighbor)) {
+                    OpenSet.Add(Neighbor);
                 }
             }
         }
-
-        // Verifica la raggiungibilità
-        if (IsGridFullyReachable())
-        {
-            break;
-        }
-
-        Attempts++;
     }
 
-    if (Attempts >= 100)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Impossibile generare una griglia raggiungibile!"));
-    }
+    return TArray<FCell>();
 }
 
-bool AGrid::IsGridFullyReachable() const
-{
-    // Crea una copia della griglia per marcare le celle visitate
-    TArray<TArray<bool>> Visited;
-    Visited.Init(TArray<bool>(), GridSize);
-    for (int32 x = 0; x < GridSize; x++)
-    {
-        Visited[x].Init(false, GridSize);
-    }
+bool AAGrid::IsGridFullyReachable() {
+    TArray<FCell> VisitedCells;
+    TArray<FCell> Queue;
+    Queue.Add(GridCells[0][0]);
 
-    // Usa una coda per il Flood Fill
-    TQueue<TPair<int32, int32>> Queue;
-    Queue.Enqueue(TPair<int32, int32>(0, 0)); // Parti dalla cella (0, 0)
-    Visited[0][0] = true;
+    while (Queue.Num() > 0) {
+        FCell Current = Queue.Pop();
+        VisitedCells.Add(Current);
 
-    int32 ReachableCells = 1;
-
-    // Esegui il Flood Fill
-    while (!Queue.IsEmpty())
-    {
-        TPair<int32, int32> CurrentCell;
-        Queue.Dequeue(CurrentCell);
-
-        // Controlla le celle adiacenti
-        TArray<TPair<int32, int32>> Neighbors = {
-            {CurrentCell.Key - 1, CurrentCell.Value}, // Sinistra
-            {CurrentCell.Key + 1, CurrentCell.Value}, // Destra
-            {CurrentCell.Key, CurrentCell.Value - 1}, // Sopra
-            {CurrentCell.Key, CurrentCell.Value + 1}  // Sotto
-        };
-
-        for (const auto& Neighbor : Neighbors)
-        {
-            int32 X = Neighbor.Key;
-            int32 Y = Neighbor.Value;
-
-            if (IsCellValid(X, Y) && !Visited[X][Y] && !IsCellObstacle(X, Y))
-            {
-                Visited[X][Y] = true;
-                Queue.Enqueue(TPair<int32, int32>(X, Y));
-                ReachableCells++;
+        for (FCell Neighbor : GetNeighbors(Current)) {
+            if (!VisitedCells.Contains(Neighbor) && !IsBlocked(Neighbor)) {
+                Queue.Add(Neighbor);
             }
         }
     }
 
-    // Verifica se tutte le celle sono raggiungibili
-    return ReachableCells == (GridSize * GridSize - ObstacleCount);
+    return VisitedCells.Num() == (GridSizeX * GridSizeY);
 }
 
-void AGrid::DrawGrid()
-{
-    for (int32 x = 0; x < GridSize; x++)
-    {
-        for (int32 y = 0; y < GridSize; y++)
-        {
-            FVector Start = GridArray[x][y];
-            FVector EndX = FVector((x + 1) * CellSize, y * CellSize, 0);
-            FVector EndY = FVector(x * CellSize, (y + 1) * CellSize, 0);
+TArray<FCell> AAGrid::GetNeighbors(FCell Cell) {
+    TArray<FCell> Neighbors;
+    int32 X = Cell.X;
+    int32 Y = Cell.Y;
 
-            // Disegna le linee della griglia
-            DrawDebugLine(GetWorld(), Start, EndX, FColor::White, true, -1, 0, 2);
-            DrawDebugLine(GetWorld(), Start, EndY, FColor::White, true, -1, 0, 2);
-        }
-    }
+    if (X > 0) Neighbors.Add(GridCells[X - 1][Y]);
+    if (X < GridSizeX - 1) Neighbors.Add(GridCells[X + 1][Y]);
+    if (Y > 0) Neighbors.Add(GridCells[X][Y - 1]);
+    if (Y < GridSizeY - 1) Neighbors.Add(GridCells[X][Y + 1]);
+
+    return Neighbors;
 }
 
-FVector AGrid::GetCellPosition(int32 X, int32 Y) const
-{
-    if (IsCellValid(X, Y))
-    {
-        return GridArray[X][Y];
-    }
-    return FVector::ZeroVector;
+int32 AAGrid::GetDistance(FCell A, FCell B) {
+    return FMath::Abs(A.X - B.X) + FMath::Abs(A.Y - B.Y);
 }
 
-bool AGrid::IsCellValid(int32 X, int32 Y) const
-{
-    return X >= 0 && X < GridSize && Y >= 0 && Y < GridSize;
+void AAGrid::HighlightCell(FCell Cell, FColor Color) {
+    // Implementa l'evidenziazione della cella (es. cambiare colore del materiale)
 }
 
-bool AGrid::IsCellObstacle(int32 X, int32 Y) const
-{
-    if (IsCellValid(X, Y))
-    {
-        return ObstacleGrid[X][Y];
-    }
+FVector AAGrid::GetCellWorldPosition(FCell Cell) {
+    return FVector(Cell.X * CellSize, Cell.Y * CellSize, 0);
+}
+
+bool AAGrid::IsBlocked(FCell Cell) {
+    // Implementa la logica per verificare se una cella è bloccata
     return false;
-}
-
-bool AGrid::IsCellOccupied(int32 X, int32 Y) const
-{
-    if (!UnitManager)
-    {
-        UE_LOG(LogTemp, Error, TEXT("UnitManager non inizializzato!"));
-        return false;
-    }
-
-    // Verifica se c'è un'unità nella cella (X, Y)
-    return UnitManager->GetUnitAtPosition(X, Y) != nullptr; // Usa GetUnitAtPosition
 }

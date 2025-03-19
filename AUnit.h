@@ -1,17 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
-#include "GameFramework/DamageType.h"
+#include "GameFramework/Actor.h"
 #include "AUnit.generated.h"
 
 UCLASS()
-class TATTICO2_API AUnit : public APawn
-{
+class YOURPROJECTNAME_API AAUnit : public AActor {
     GENERATED_BODY()
 
 public:
-    AUnit();
+    AAUnit();
 
 protected:
     virtual void BeginPlay() override;
@@ -19,37 +17,19 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    void SetGridPosition(int32 X, int32 Y);
-    int32 GetGridPositionX() const;
-    int32 GetGridPositionY() const;
-    virtual int32 CalculateDamage() const;
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-    virtual bool CanCounterAttack(AUnit* Attacker) const;
-    bool MoveTo(int32 TargetX, int32 TargetY, class AGrid* Grid);
-    int32 GetMovementRange() const;
-    AController* GetUnitController() const;
+    // Muove l'unità a una cella specifica
+    void MoveToCell(FCell Destination);
 
-protected:
-    int32 GridPositionX;
-    int32 GridPositionY;
+    // Ottiene la cella corrente
+    FCell GetCurrentCell() const { return CurrentCell; }
 
-    UPROPERTY(EditAnywhere, Category = "Unit")
-    int32 Health;
+    // Imposta la cella corrente
+    void SetCurrentCell(FCell Cell) { CurrentCell = Cell; }
 
-    UPROPERTY(EditAnywhere, Category = "Unit")
-    int32 DamageMin;
+    // Ottiene il range di movimento
+    int32 GetMovementRange() const { return MovementRange; }
 
-    UPROPERTY(EditAnywhere, Category = "Unit")
-    int32 DamageMax;
-
-    UPROPERTY(EditAnywhere, Category = "Unit")
+private:
+    FCell CurrentCell;
     int32 MovementRange;
-
-    UPROPERTY(EditAnywhere, Category = "Unit")
-    int32 AttackType;
-
-    UPROPERTY(EditAnywhere, Category = "Unit")
-    int32 AttackRange;
-
-    AController* UnitController;
 };
