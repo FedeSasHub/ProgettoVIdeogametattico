@@ -9,7 +9,7 @@ AGrid::AGrid() {
     GridSizeX = 25;
     GridSizeY = 25;
     CellSize = 100.f;
-    CellBlueprintClass = nullptr; // Assicurati di impostare questa variabile nell'editor di Unreal
+    CellBlueprintClass = nullptr; //impostare questa variabile nell'editor di Unreal
 }
 
 void AGrid::BeginPlay() {
@@ -38,7 +38,7 @@ void AGrid::GenerateGrid() {
             GridCells[X][Y] = FCell{ X, Y };
 
             // Aggiungi ostacoli in modo casuale (es. 20% di probabilità)
-            if (FMath::RandRange(0, 100) < 20) {
+            if (FMath::RandRange(0, 100) < 12) {
                 GridCells[X][Y].bIsObstacle = true;
             }
 
@@ -54,13 +54,18 @@ void AGrid::GenerateGrid() {
 
             GridActors[X][Y] = CellActor;
 
-            // Applica un materiale dinamico per evidenziare gli ostacoli
-            if (GridCells[X][Y].bIsObstacle) {
-                UStaticMeshComponent* MeshComponent = CellActor->FindComponentByClass<UStaticMeshComponent>();
-                if (MeshComponent) {
-                    UMaterialInstanceDynamic* DynamicMaterial = MeshComponent->CreateAndSetMaterialInstanceDynamic(0);
-                    if (DynamicMaterial) {
-                        DynamicMaterial->SetVectorParameterValue("BaseColor", FLinearColor::Red);
+            // Ottieni il componente mesh della cella
+            UStaticMeshComponent* MeshComponent = CellActor->FindComponentByClass<UStaticMeshComponent>();
+            if (MeshComponent) {
+                // Crea un Material Instance Dynamic per la cella
+                UMaterialInstanceDynamic* DynamicMaterial = MeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+                if (DynamicMaterial) {
+                    // Imposta il colore di default per la cella (azzurro)
+                    DynamicMaterial->SetVectorParameterValue("Color", FLinearColor::Blue); // Usa "Color" per la cella di sinistra
+
+                    // Se la cella è un ostacolo, cambia il colore in rosso
+                    if (GridCells[X][Y].bIsObstacle) {
+                        DynamicMaterial->SetVectorParameterValue("BaseColor", FLinearColor::Red); // Usa "BaseColor" per la cella di destra
                     }
                 }
             }
